@@ -2,7 +2,6 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #include <GL/gl.h>
-#include <cstdlib>
 #include <stdio.h>
 #include <math.h>
 
@@ -63,22 +62,14 @@ void addPoint(Point point) {
     }
 }
 
-double euclidianDistance(int x1, int x2, int y1, int y2) {
+float euclidianDistance(int x1, int x2, int y1, int y2) {
     return sqrt(pow(double(x1 - x2), 2) + pow(double(y1 - y2), 2));
-}
-
-void removePoint(Point point) {
-    if (head == NULL || head->next == NULL) {
-        printf("head or head->next == NULL");
-        return;
-    }
-
 }
 
 void displayList() {
     Node *current = head;
     int click = 0;
-    printf("[");
+    printf("\n[");
     while (current != NULL) {
         printf("{ point.x: %d, point.y: %d }, ", current->point.x, current->point.y);
         current = current->next;
@@ -86,6 +77,48 @@ void displayList() {
     }
     printf("]\n");
 }
+
+void removePoint(Point point) {
+    if (head == NULL || head->next == NULL) {
+        return;
+    }
+    float distance = euclidianDistance(head->point.x, point.x, head->point.y, point.y);
+    Node *target = head;
+    Node *current = head;
+
+    while (current != NULL) {
+        float currentDistance = euclidianDistance(current->point.x, point.x, current->point.y, point.y);
+        if (currentDistance < distance) {
+            distance = currentDistance;
+            target = current;
+        }
+        current = current->next; 
+    }
+    printf("target = { x: %d, y: %d }", target->point.x, target->point.y);
+    displayList();
+    if (target == head) {
+        head = head->next;
+        if (head != NULL) {
+            head->prev = NULL;
+        } else {
+            tail = NULL; // If only one node, update tail
+        }
+        free(target); // Free memory of removed node
+    } else if (target == tail) {
+        tail = tail->prev;
+        if (tail != NULL) {
+            tail->next = NULL;
+        } else {
+            head = NULL; // If only one node, update head
+        }
+        free(target); // Free memory of removed node
+    } else {
+        target->prev->next = target->next;
+        target->next->prev = target->prev;
+        free(target); // Free memory of removed node
+    }
+}
+
 
 void displayListReversed() {
     Node *current = tail;
@@ -106,11 +139,12 @@ void mouseListener(int button, int state, int x, int y) {
         point.y = glutGet(GLUT_WINDOW_HEIGHT) - y;
         switch (button) {
             case GLUT_LEFT_BUTTON: 
-                printf("left mouse");
+                printf("\nLeft click\n");
                 addPoint(point);
                 glutPostRedisplay();
                 break;
             case GLUT_RIGHT_BUTTON: 
+                printf("\nRight click\n");
                 removePoint(point);
                 glutPostRedisplay();
                 break;
@@ -119,6 +153,7 @@ void mouseListener(int button, int state, int x, int y) {
 }
 
 void render(void) {
+    glClear(GL_COLOR_BUFFER_BIT);
     glColor3f(1, 1, 1);
     glPointSize(10);
 
@@ -158,7 +193,6 @@ int main(int argc, char **argv) {
     glutInitWindowSize(320, 320);
     glutInitDisplayMode(GLUT_RGB | GLUT_RGBA);
     glutCreateWindow("Lines");
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glutDisplayFunc(render);
     glutMouseFunc(mouseListener);
     glutMainLoop();
