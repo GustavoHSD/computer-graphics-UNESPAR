@@ -20,15 +20,9 @@ struct Node {
 Node *head = NULL;
 Node *tail = NULL;
 
-// initialize point count and point buffer
-int pointCount = 0;
-Point pointBuffer;
-
 // define window size
 int windowHeight = 320;
 int windowWidth = 320;
-
-
 
 void addPoint(Point point) {
     struct Node *newNode = (Node*)malloc(sizeof(Node));    
@@ -54,16 +48,24 @@ void addPoint(Point point) {
         current->next = newNode;
         newNode->prev = (Node *) malloc(sizeof(Node));
         newNode->prev = current;
-        tail = newNode;
-        
-        pointCount++;
-        pointBuffer = current->point;
-        // printf("Point buffer { x: %d, y: %d}\n", pointBuffer.x, pointBuffer.y);
+        tail = newNode; 
     }
 }
 
 float euclidianDistance(int x1, int x2, int y1, int y2) {
     return sqrt(pow(double(x1 - x2), 2) + pow(double(y1 - y2), 2));
+}
+
+void displayListReversed() {
+    Node *current = tail;
+    int click = 0;
+    printf("[");
+    while (current != NULL) {
+        printf("{ point.x: %d, point.y: %d }, ", current->point.x, current->point.y);
+        current = current->prev;
+        click++;
+    }
+    printf("]\n");
 }
 
 void displayList() {
@@ -95,42 +97,20 @@ void removePoint(Point point) {
         current = current->next; 
     }
     printf("target = { x: %d, y: %d }", target->point.x, target->point.y);
-    displayList();
+    // displayList();
     if (target == head) {
         head = head->next;
-        if (head != NULL) {
-            head->prev = NULL;
-        } else {
-            tail = NULL; // If only one node, update tail
-        }
-        free(target); // Free memory of removed node
+        head->prev = NULL;
     } else if (target == tail) {
         tail = tail->prev;
-        if (tail != NULL) {
-            tail->next = NULL;
-        } else {
-            head = NULL; // If only one node, update head
-        }
-        free(target); // Free memory of removed node
+        tail->next = NULL;
     } else {
         target->prev->next = target->next;
         target->next->prev = target->prev;
-        free(target); // Free memory of removed node
     }
+    free(target);
 }
 
-
-void displayListReversed() {
-    Node *current = tail;
-    int click = 0;
-    printf("[");
-    while (current != NULL) {
-        printf("{ point.x: %d, point.y: %d }, ", current->point.x, current->point.y);
-        current = current->prev;
-        click++;
-    }
-    printf("]\n");
-}
 
 void mouseListener(int button, int state, int x, int y) {
     if (state == GLUT_DOWN) {
