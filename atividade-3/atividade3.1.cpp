@@ -20,8 +20,6 @@ struct Node {
     Node *prev;
 };
 
-bool hasOpened = false;
-
 // initialize list
 Node *head = NULL;
 Node *tail = NULL;
@@ -47,14 +45,12 @@ void addPoint(Point point) {
 }
 
 void openLastSaved() {
-    string line;
+    free(head);
     ifstream file("data/atividade3.1.dat");
     Point point;
-    while (getline(file, line)) {
-        file >> point.x >> point.y;
+    while (file >> point.x >> point.y) { 
         addPoint(point);
     }
-    hasOpened = true;
 }
 
 float euclidianDistance(int x1, int x2, int y1, int y2) {
@@ -144,8 +140,6 @@ void save() {
     file.close();
 }
 
-
-
 void keyboardListener(unsigned char key, int x, int y) {
     switch (key) {
         case 's':
@@ -153,9 +147,7 @@ void keyboardListener(unsigned char key, int x, int y) {
             printf("drawing saved");
             break;
         case 'o':
-            if (!hasOpened) {
-                openLastSaved();
-            }
+            openLastSaved();
             glutPostRedisplay(); 
             break;
     }
