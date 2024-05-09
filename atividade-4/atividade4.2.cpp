@@ -8,14 +8,10 @@
 
 void drawFunction() {
     glBegin(GL_LINE_STRIP);
-    float num_segments = 100;
-    for (int i = 0; i < num_segments; i++) {
-        float t = float(i)/10;
+    for (float i = -2; i < 2; i+= 0.01) {
+        float y = i*i*i;
 
-        float x = t; 
-        float y = 4 * x * x + 2 * x + 3;
-
-        glVertex2f(x+glutGet(GLUT_WINDOW_WIDTH), y+glutGet(GLUT_WINDOW_HEIGHT));
+        glVertex2f(i, y);
     }
     glEnd();
 }
@@ -29,7 +25,7 @@ void render(void) {
 
 void init() {
     glClearColor(0.0, 0.0, 0.0, 1.0); // Set clear color to black
-    gluOrtho2D(0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT), 0);
+    //gluOrtho2D(0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT), 0);
 }
 
 int main(int argc, char **argv) {
