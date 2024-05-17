@@ -10,7 +10,6 @@ void drawFunction() {
     glBegin(GL_LINE_STRIP);
     for (float i = -2; i < 2; i+= 0.01) {
         float y = i*i*i;
-
         glVertex2f(i, y);
     }
     glEnd();
@@ -32,7 +31,7 @@ int main(int argc, char **argv) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glutInit(&argc, argv);
     glutInitWindowSize(320, 320);
-    glutCreateWindow("Circles");
+    glutCreateWindow("Function");
     init();
 
     glutDisplayFunc(render);
