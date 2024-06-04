@@ -1,12 +1,16 @@
 #include <GL/freeglut.h>
+#include <GL/freeglut_std.h>
 #include <GL/gl.h>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <iterator>
 #include <math.h>
+#include <thread>
+#include <chrono>
+#include <vector>
 
-#define PI 3.14159265
 #define num_segments 50
 
 using namespace std;
@@ -23,16 +27,18 @@ class Petal {
     Point center;
     Point points[num_segments];
     float radius;
+    float flowerRadius;
 public:
-    Petal() : center(Point((float)glutGet(GLUT_SCREEN_WIDTH)/2, (float)glutGet(GLUT_SCREEN_HEIGHT)/2)), radius(20) {}
-    Petal(Point center, float radius) {
+    Petal() : center(Point(0, 0)), radius(20), flowerRadius(0) {}
+    Petal(Point center, float radius, float flowerRadius) : center(center), radius(radius), flowerRadius(flowerRadius) {
         this->center = center;
         this->radius = radius;
+        this->flowerRadius = flowerRadius;
 
         for (int i = 0; i < num_segments; i++) {
-            float theta = PI * float(i) / float(num_segments);
-            float x = this->radius * cos(theta);
-            float y = this->radius * sin(theta);
+            float theta = M_PI * float(i) / float(num_segments);
+            float x = -this->radius * cos(theta);
+            float y = this->radius * sin(theta)+flowerRadius;
             this->points[i] = Point(x + center.x, y + center.y);
         }
     }
@@ -71,12 +77,13 @@ class Flower {
     Petal petals[8];
     Point center;
     float radius;
+    float rotationAngle;
 public:
-    Flower(Point center, float radius) : center(center), radius(radius) {
-        float angle = PI * 2 / 8;
-
+    Flower(Point center, float radius) : center(center), radius(radius), rotationAngle(0.0f){
+        float angle = M_PI * 2 / 8;
+        float petalRadius = radius * sqrt(2 - sqrt(2)) / 2;
         for(int i = 0; i < 8; i++) {
-            Petal petal(this->center, this->radius);
+            Petal petal(this->center, petalRadius, this->radius);
             petal.rotateAround(center, angle * i);
             this->petals[i] = petal; 
         }
@@ -87,22 +94,32 @@ public:
             petal.draw();
         }
     } 
+
+    void spin(float angle) {
+        rotationAngle += angle;
+        float anglePerPetal = M_PI * 2 / 8;
+        for(int i = 0; i < 8; i++) {
+            petals[i].rotateAround(center, anglePerPetal * i + rotationAngle);
+        }
+    }
 };
 
-static Point click;
+static Point click(320, 240);
+static vector<Flower> flowers;
 
 void render(void) {
     glClear(GL_COLOR_BUFFER_BIT);
     glColor3f(1.0, 1.0, 1.0);
-    Flower *flower = new Flower(click, 200);
-    cout << click.x << ", " << click.y << ";\n";
-    flower->draw();
+    for (Flower f : flowers) {
+        f.draw(); 
+    }
     glFlush();
 }
 
 void mouseListener(int button, int state, int x, int y) {
     if (state == GLUT_DOWN) {
         click = Point(x, y);
+        flowers.push_back(Flower(click, 200));
         switch (button) {
         case GLUT_LEFT_BUTTON:
             glutPostRedisplay();
@@ -111,6 +128,13 @@ void mouseListener(int button, int state, int x, int y) {
             glutPostRedisplay();
             break;
         }
+    }
+}
+
+void idle() {
+    if (flowers.size() > 0) {
+        flowers.back().spin(0.000001f);
+        glutPostRedisplay();
     }
 }
 
@@ -126,6 +150,7 @@ int main(int argc, char** argv) {
 
     glutDisplayFunc(render);
     glutMouseFunc(mouseListener);
+    glutIdleFunc(idle);
     glutMainLoop();
 
     return 0;
